@@ -7,7 +7,7 @@ from .views import(
 urlpatterns = [
     path("chat",views.chat),
     path("checkdomain",views.checkdomain),
-    path("create-intent",views.createintent),
+    path("createintent",views.createintent),
     path("googlelogin",views.Googlelogin),
     path("signup",views.Signup),
     path("loginuser",views.Loginuser),

@@ -83,18 +83,23 @@ def checkdomain(request):
      print("e")
      return JsonResponse({"error":"something went wrong"})
  
- 
+
 @api_view(["POST"])
 def createintent(request):
     try:
+        data = json.loads(request.body)      
+        price = float(data["price"])
+        amount=int(price*100)
+        print(price)
+                               
         print("hello")    
         intent=stripe.PaymentIntent.create(
-            amount=1099,  # in cents
+            amount=amount,  # in cents
             currency="usd",
             automatic_payment_methods={"enabled": True},    
         )
         
-        return JsonResponse({"client_secret":intent.client_secret})
+        return JsonResponse({"clientsecret":intent.client_secret})
     except Exception as e:
         print(e)
         return JsonResponse({"error":"something went wrong"})   

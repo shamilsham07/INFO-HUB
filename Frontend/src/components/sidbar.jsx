@@ -71,7 +71,7 @@ export default function Sidbar({ active, logged }) {
               </li>{" "}
               <li
                 className={`text-white d-flex gap-3 justify-content-start p-2 ${
-                  active == "payment" ? "search-sidebar" : ""
+                  active == "payment"||"paymentprimary" ? "search-sidebar" : ""
                 }`}
                 onClick={() => navigate("/payment")}
               >

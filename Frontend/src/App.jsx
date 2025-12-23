@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { authenticate } from "./components/redux/reducer";
 import { logout } from "./components/redux/reducer";
 import Popup from "./popup";
+import Primarypaymentpage from "./components/primarypaymentpage";
 
 function App() {
   const authenticates = useSelector((state) => state.auth.isAuthenticated);
@@ -50,6 +51,7 @@ function App() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/payment/success" element={<Paymentsuccess />} />
         <Route path="/loader" element={<Loader />} />
+        <Route path="/paymentprimary" element={<Primarypaymentpage/>}/>
       </Routes>
     </>
   );

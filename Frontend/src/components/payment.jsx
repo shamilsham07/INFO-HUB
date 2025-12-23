@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import Sidbar from "./sidbar";
@@ -17,46 +17,30 @@ const CheckoutForm = ({ setLoader }) => {
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleSubmit = async (event) => {
-    setLoader(true);
     event.preventDefault();
+    setLoader(true);
 
-    if (elements == null) {
-      return;
-    }
-
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setErrorMessage(submitError.message);
+    if (!stripe || !elements) {
       setLoader(false);
       return;
     }
-    const res = await fetch("http://localhost:8000/create-intent", {
-      method: "POST",
-    });
-
-    const { client_secret: clientSecret } = await res.json();
-    setLoader(false);
-
+     const result=fetch("http://localhost:8000/paymentreigster",{
+        method:"POST"
+      })
+      
     const { error } = await stripe.confirmPayment({
-      //`Elements` instance that was used to create the Payment Element
+ 
       elements,
-      clientSecret,
       confirmParams: {
         return_url: "http://localhost:5173/payment/success",
       },
     });
 
     if (error) {
-      // This point will only be reached if there is an immediate error when
-      // confirming the payment. Show error to your customer (for example, payment
-      // details incomplete)
-      console.log(error.message);
       setErrorMessage(error.message);
-    } else {
-      // Your customer will be redirected to your `return_url`. For some payment
-      // methods like iDEAL, your customer will be redirected to an intermediate
-      // site first to authorize the payment, then redirected to the `return_url`.
     }
+
+    setLoader(false);
   };
 
   return (
@@ -82,29 +66,36 @@ const stripePromise = loadStripe(
   "pk_test_51SbLboE14I39MgoAZp0PgN5UzNefNXYpNWKvFoiP0hmPMNF8OPguYXzsdjGqWFZb6XwxE9zj0BiweQek0aZdZirs00pfjPwOVA"
 );
 
-const options = {
-  mode: "payment",
-
-  amount: 1099,
-  currency: "usd",
-  // Fully customizable with appearance API.
-  appearance: {
-    /*...*/
-  },
-};
-
-export default function Payment() {
+export default function Payment({ price }) {
   const [loader, setLoader] = useState(false);
+  const [clientsecret, setclientsecret] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:8000/createintent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        price: price,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => setclientsecret(data.clientsecret));
+  }, [price]);
+  const options = {
+    clientSecret: clientsecret,
+    appearance: { theme: "stripe" },
+  };
 
   return (
     <>
-      <Sidbar active={"payment"} />
       {loader && <Loader />}
-      <div className="strip-pay d-flex justify-content-center align-items-center">
-        <Elements stripe={stripePromise} options={options}>
-          <CheckoutForm setLoader={setLoader} />
-        </Elements>
-      </div>
+      {clientsecret && (
+        <div className="strip-pay d-flex justify-content-center align-items-center">
+          <Elements stripe={stripePromise} options={options}>
+            <CheckoutForm setLoader={setLoader} price={price}  />
+          </Elements>
+        </div>
+      )}
     </>
   );
 }
@@ -118,5 +109,3 @@ export function Paymentsuccess() {
     </>
   );
 }
-
-
