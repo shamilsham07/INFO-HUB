@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import "./chat.css";
 import { useNavigate } from "react-router-dom";
+import { useSelector,useDispatch } from "react-redux";
+import { logout } from "./redux/reducer";
 
-export default function Sidbar({ active }) {
+export default function Sidbar({ active, logged }) {
+  const authenticate=useSelector((state)=>state.auth.isAuthenticated)
+  console.log(authenticate)
+  console.log(active)
+  console.log(logged)
+  const dispatch=useDispatch()
   const navigate = useNavigate("");
   const [Showopacity, setShowopacity] = useState(false);
   function opensidebar() {
@@ -13,6 +20,13 @@ export default function Sidbar({ active }) {
     const ul = document.querySelectorAll("ul");
     console.log(ul);
   }
+  function activelogout(){
+      
+    dispatch(logout(true))
+
+ 
+  }
+ 
   return (
     <>
       <button className="sidebar-btn" onClick={opensidebar}>
@@ -59,7 +73,7 @@ export default function Sidbar({ active }) {
                 className={`text-white d-flex gap-3 justify-content-start p-2 ${
                   active == "payment" ? "search-sidebar" : ""
                 }`}
-                onClick={()=>navigate("/payment")}
+                onClick={() => navigate("/payment")}
               >
                 <i class="bi bi-credit-card-2-front"></i>
                 <p className="m-0">Payment</p>
@@ -77,10 +91,21 @@ export default function Sidbar({ active }) {
                 <i class="bi bi-person-fill"></i>
                 <p className="m-0">Profile</p>
               </li>
-              <li className="text-white d-flex gap-3 justify-content-start p-2">
-                <i class="bi bi-door-open"></i>
-                <p className="m-0">login</p>
-              </li>
+              {authenticate ? (
+                <li className="text-white d-flex gap-3 justify-content-start p-2">
+                  <i class="bi bi-door-open"></i>
+                  <p className="m-0" onClick={activelogout}>
+                    logout
+                  </p>
+                </li>
+              ) : (
+                <li className="text-white d-flex gap-3 justify-content-start p-2">
+                  <i class="bi bi-door-open"></i>
+                  <p className="m-0" onClick={()=>navigate("/login")}>
+                    login
+                  </p>
+                </li>
+              )}
             </ul>
           </div>
           <div>

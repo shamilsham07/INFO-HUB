@@ -1,8 +1,14 @@
 import React, { useRef, useState } from "react";
 import "./login.css";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
+import { useSelector,useDispatch } from "react-redux";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import { authenticate } from "../redux/reducer";
 
 export default function Login() {
+  
   const [Name, setname] = useState("");
   const [Email, setemail] = useState("");
   const [password, setpassword] = useState("");
@@ -10,8 +16,19 @@ export default function Login() {
   const [hidelog, sethidelog] = useState(false);
   const [signuplog, setsignuplog] = useState(false);
   const [error, seterror] = useState(false);
+  const [mailerror, setmailerror] = useState(false);
+  const [signloader, setsignloader] = useState(false);
   const [referenceerror, setreferenceerror] = useState(false);
+  const [Logemail, SetLogmail] = useState("");
+  const [Logpass, SetLogpass] = useState("");
+  const navigate = useNavigate("");
+
   const passwordref = useRef("");
+  const mailref = useRef("");
+const authenticates=useSelector((state)=>state.auth.isAuthenticated)
+const dispatch=useDispatch()
+
+
 
   const login = useGoogleLogin({
     onSuccess: async (credentialResponse) => {
@@ -63,6 +80,7 @@ export default function Login() {
   }
 
   async function onSignup(e) {
+    setsignloader(true);
     e.preventDefault();
     console.log(error);
     if (error) {
@@ -73,26 +91,90 @@ export default function Login() {
       try {
         const formdata = new FormData();
         formdata.append("name", Name);
-        formdata.append("email",Email)
-        formdata.append("password",password)
-        const result = await fetch("http://localhost:8000/signup",{
-          method:"POST",
-          body:formdata
+        formdata.append("email", Email);
+        formdata.append("password", password);
+        const result = await fetch("http://localhost:8000/signup", {
+          method: "POST",
+          body: formdata,
         });
-        const res=await result.json()
-        console.log(res)
+        const res = await result.json();
+        console.log(res);
+        if (res.mailerror) {
+          setsignloader(false);
+          mailref.current.focus();
+          setmailerror(true);
+          console.log("mail is already used");
+        } else if (res.signup) {
+          setsignloader(false);
+          setsignuplog(false);
+          console.log("h");
+          setTimeout(() => {
+            sethidelog(false);
+          }, 900);
+          console.log("everyhting seems good");
+        } else if (res.error) {
+          setsignloader(false);
+          console.log("somrhting went wrong");
+        }
       } catch (error) {
         console.log(error);
       }
     }
   }
 
+  async function loguser(e) {
+    setsignloader(true);
+    e.preventDefault();
+    console.log();
+    const formdata = new FormData();
+    formdata.append("email", Logemail);
+    formdata.append("password", Logpass);
+    const result = await fetch("http://localhost:8000/loginuser", {
+      method: "POST",
+      credentials: "include", 
+      body: formdata,
+    });
+    const res = await result.json();
+    console.log(res);
+    setsignloader(false);
+
+    if (res.message) {
+      console.log(res.message);
+      dispatch(authenticate(true))
+      navigate("/")
+    } else {
+      toast.error("something went wrong!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
+    }
+  }
+
   return (
     <section className="login-section">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <div className="container h-100">
         <div className="d-padding h-100">
-          <div className="row justify-content-center align-items-center h-100">
-            <div className="col-5 shadows m-0 h-100 left-login d-flex justify-content-center align-items-center flex-column">
+          <div className="row justify-content-center m-0 align-items-center h-100 row-shadow">
+            <div className="col-12 col-lg-5 col-md-5  shadows m-0 right-login left-login d-flex justify-content-center align-items-center flex-column">
               <div className="login-logo">
                 <img
                   src="./two-leaves.png"
@@ -108,7 +190,7 @@ export default function Login() {
               // createsignup........................................................................................
 
               <div
-                className={`col-5 shadows m-0 h-100 right-login d-flex justify-content-center align-items-center flex-column ${
+                className={`col-12 col-lg-5 col-md-5 shadows m-0 h-100 right-login d-flex justify-content-center align-items-center flex-column ${
                   signuplog ? "" : "make-rotation"
                 }`}
               >
@@ -149,10 +231,26 @@ export default function Login() {
                         value={Email}
                         placeholder="Enter your email"
                         name="email"
-                        onChange={(e) => setemail(e.target.value)}
+                        onChange={(e) => {
+                          setemail(e.target.value);
+                          if (mailerror) {
+                            setmailerror(false);
+                          }
+                        }}
+                        ref={mailref}
+                        className={`${
+                          mailerror ? "referenceerror" : "referenceerrord"
+                        }`}
                       />
+                      <p
+                        className={`seterror ${
+                          mailerror ? "d-block" : "d-none"
+                        }`}
+                      >
+                        Email already used!
+                      </p>
                     </div>
-                    <div className="d-flex flex-column gap-1 pt-2 signup-form">
+                    <div className="d-flex flex-column gap-1 pt-1 signup-form">
                       <label htmlFor="">password</label>
                       <input
                         type="password"
@@ -189,8 +287,16 @@ export default function Login() {
                       </p>
                     </div>
                     <div className="pt-4 div-log-btn">
-                      <button className="w-100 login-btn" type="submit">
-                        signup
+                      <button
+                        className="w-100 login-btn d-flex justify-content-center align-items-center"
+                        type="submit"
+                        disabled={signloader}
+                      >
+                        {signloader ? (
+                          <span className="signloader"></span>
+                        ) : (
+                          "signup"
+                        )}
                       </button>
                     </div>
                   </form>
@@ -208,7 +314,7 @@ export default function Login() {
               // ..................................................................................................
 
               <div
-                className={`col-5 shadows m-0 h-100 right-login d-flex justify-content-center align-items-center flex-column ${
+                className={`col-12 col-lg-5 col-md-5 shadows m-0 h-100 right-login d-flex justify-content-center align-items-center flex-column ${
                   signuplog ? "make-rotation" : ""
                 }`}
               >
@@ -220,19 +326,43 @@ export default function Login() {
                     welcome back! please enter your details
                   </p>
                 </div>
-                <form action="" className="form">
+                <form action="" className="form" onSubmit={loguser}>
                   <div className="d-flex flex-column gap-1 email-form">
                     <label htmlFor="" className="label-login">
                       Email
                     </label>
-                    <input type="email" placeholder="Enter your email" />
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      name="email"
+                      required
+                      value={Logemail}
+                      onChange={(e) => SetLogmail(e.target.value)}
+                    />
                   </div>
                   <div className="d-flex flex-column gap-1 pt-2 email-form">
                     <label htmlFor="">password</label>
-                    <input type="password" placeholder="Enter your password" />
+                    <input
+                      type="password"
+                      placeholder="Enter your password"
+                      required
+                      onChange={(e) => SetLogpass(e.target.value)}
+                      value={Logpass}
+                      name="password"
+                    />
                   </div>
                   <div className="pt-2 div-log-btn">
-                    <button className="w-100 login-btn">Login</button>
+                    <button
+                      className="w-100 login-btn"
+                      type="submit"
+                      disabled={signloader}
+                    >
+                      {signloader ? (
+                        <span className="signloader"></span>
+                      ) : (
+                        "Login"
+                      )}
+                    </button>
                   </div>
                 </form>
                 <div className="pt-2 div-google">

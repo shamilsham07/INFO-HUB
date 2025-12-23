@@ -31,11 +31,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
 
 ALLOWED_HOSTS = []
 
-
+AUTH_USER_MODEL = 'app.UserAccount'
 # Application definition
 
 INSTALLED_APPS = [
@@ -80,16 +80,38 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+          "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME":   "infohub",
+        "USER":  "root",
+        "PASSWORD":"",
+        "HOST":"localhost",
+        "PORT":"3306",
+         "OPTIONS": {
+            "charset": "utf8",
+        },
     }
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "app.backends.EmailBackend",
+]
 
 
 # Password validation
@@ -133,7 +155,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGINS = True
-
+CORS_ALLOW_CREDENTIALS = True
 DEBUG = os.getenv("DEBUG", "False") == "True"
 SECRET_KEY = os.getenv("SECRET_KEY")
 GEN_API_KEY = os.getenv("gen_api")

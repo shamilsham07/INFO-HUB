@@ -42,20 +42,20 @@ export default function Chat() {
 
   return (
     <>
-      <Sidbar active={"home"}/>
-   
+      <Sidbar active={"home"} />
+      <div className="container">
         <section className="chat-section bg-theme flex-column ">
           <div className="heading-chat pb-2">
             <h1 className="m-0 text-black">
-              Hi there,Shamil <br />{" "}
+              Hi there,Shamil <br />
               <span className="text-theme">what would you like to know?</span>
             </h1>
             <p className="pt-1 ">
-              chat with just free Lorem ipsum dolor <br /> sit amet consectetur
+              chat with just free Lorem ipsum dolor sit amet consectetur
               adipisicing elit.
             </p>
           </div>
-          
+      
             <div className="chat-div ">
               <div>
                 <div className="height-chat-div" ref={chatref}>
@@ -90,9 +90,9 @@ export default function Chat() {
               </div>
               <div></div>
             </div>
-        
+       
         </section>
-    
+      </div>
     </>
   );
 }
