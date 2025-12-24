@@ -33,3 +33,12 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    
+    
+class Registerpremium(models.Model):
+    user=models.ForeignKey(UserAccount,on_delete=models.CASCADE)
+    Registerdate=models.DateField(auto_now_add=True)
+    Enddate=models.DateField()
+    premiummode=models.IntegerField(default=0)
+    

@@ -5,6 +5,7 @@ import { useSelector,useDispatch } from "react-redux";
 import { logout } from "./redux/reducer";
 
 export default function Sidbar({ active, logged }) {
+
   const authenticate=useSelector((state)=>state.auth.isAuthenticated)
   console.log(authenticate)
   console.log(active)
@@ -71,9 +72,9 @@ export default function Sidbar({ active, logged }) {
               </li>{" "}
               <li
                 className={`text-white d-flex gap-3 justify-content-start p-2 ${
-                  active == "payment"||"paymentprimary" ? "search-sidebar" : ""
+                  active=="paymentprimary" ?"search-sidebar" : ""
                 }`}
-                onClick={() => navigate("/payment")}
+                onClick={() => navigate("/paymentprimary")}
               >
                 <i class="bi bi-credit-card-2-front"></i>
                 <p className="m-0">Payment</p>

@@ -13,5 +13,8 @@ urlpatterns = [
     path("loginuser",views.Loginuser),
     path("refresh", RefreshTokenView.as_view()),
     path("logout",LogoutView.as_view()),
+    path("paymentreigster",views.paymentreigster),
+    path("getnotification",views.getnotification),
+    
 ]
       

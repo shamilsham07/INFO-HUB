@@ -24,12 +24,17 @@ const CheckoutForm = ({ setLoader }) => {
       setLoader(false);
       return;
     }
-     const result=fetch("http://localhost:8000/paymentreigster",{
-        method:"POST"
-      })
-      
+    try {
+      const result = await fetch("http://localhost:8000/paymentreigster", {
+        method: "POST",
+       credentials: "include",
+      });
+      result.then((res) => console.log(res.data));
+    } catch (error) {
+      console.log(error);
+    }
+
     const { error } = await stripe.confirmPayment({
- 
       elements,
       confirmParams: {
         return_url: "http://localhost:5173/payment/success",
@@ -92,7 +97,7 @@ export default function Payment({ price }) {
       {clientsecret && (
         <div className="strip-pay d-flex justify-content-center align-items-center">
           <Elements stripe={stripePromise} options={options}>
-            <CheckoutForm setLoader={setLoader} price={price}  />
+            <CheckoutForm setLoader={setLoader} price={price} />
           </Elements>
         </div>
       )}

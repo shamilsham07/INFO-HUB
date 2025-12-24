@@ -11,6 +11,8 @@ from .models import *
 from django.conf import settings
 import requests
 import stripe
+from datetime import date, timedelta
+from django.views.decorators.csrf import csrf_exempt
 import json
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
@@ -175,15 +177,16 @@ def Loginuser(request):
             key="access",
             value=str(refresh.access_token),
             httponly=True,
-            secure=False,  # True in production (HTTPS)
-            samesite="Lax",
+            secure=False,          # REQUIRED
+            samesite="Lax", 
         )
+   
         response.set_cookie(
             key="refresh",
             value=str(refresh),
             httponly=True,
             secure=False,
-            samesite="Lax",
+            samesite="Lax"   
         )
         print(response)
         print(request.COOKIES)
@@ -198,6 +201,7 @@ class RefreshTokenView(APIView):
         print(request.COOKIES)
         
         refresh_token = request.COOKIES.get("refresh")
+        print("...//",refresh_token)
 
         if not refresh_token:
             return JsonResponse({"error": "No refresh token"}, status=401)
@@ -240,3 +244,61 @@ class LogoutView(APIView,):
         response.delete_cookie("access")  
         response.delete_cookie("refresh")
         return response
+    
+    
+@csrf_exempt  
+@api_view(["POST"])
+def paymentreigster(request):
+    try:
+        print("...........................................................")
+        print("hi")
+        try:
+            print("ALL COOKIES:", request.COOKIES)
+            cook=request.COOKIES.get("refresh")
+            print(".....................",cook)
+            refresh_token=RefreshToken(cook)
+            userid=refresh_token["user_id"]
+            print(userid)    
+            user=UserAccount.objects.get(id=userid)   
+            print(user) 
+            if user:
+                try:
+                    premuser=Registerpremium.objects.get(user=user)
+                    if premuser:
+                        Registerpremium.objects.delete(user=user)
+                except Exception as e:
+                        Registerpremium.objects.create(user=user,premiummode=1,Enddate=date.today()+timedelta(days=1))
+                        return JsonResponse({"message":"good"})
+                print("register_payment_register")
+            else:
+                print("something_failed")   
+                return JsonResponse({"error":"something went fishy"})     
+        except Exception as e:   
+            print(e)
+            return JsonResponse({"email":"email not found"})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error":"something wnet worng"})        
+    
+@api_view(["POST"])
+def getnotification(request):
+    try:
+        print("ikkssssssssss")    
+        token=request.COOKIES.get("refresh")
+        refresh_token=RefreshToken(token)
+        user=refresh_token["user_id"]      
+        print("./././/",user)   
+        try:
+            premuser=Registerpremium.objects.get(user=user)
+            if premuser:
+                enddate=premuser.Enddate    
+                print(enddate-date.today())
+                return JsonResponse({"date confirm":"looks ends soon"})
+            
+        except Exception as e:
+            return JsonResponse({"error":"something went wrong"})
+        print("hi")
+        return JsonResponse({"message":"everything seems good"})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error":"soemthing went wrong"})

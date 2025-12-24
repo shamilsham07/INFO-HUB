@@ -39,6 +39,22 @@ function App() {
     }
     refresh();
   }, []);
+  useEffect(() => {
+    async function getnotification() {
+      try {
+        console.log("check-notification");
+        const result = await fetch("http://localhost:8000/getnotification", {
+          method: "POST",
+          credentials: "include",
+        });
+        const res = await result.json();
+        console.log(res)
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    getnotification()
+  }, []);
 
   return (
     <>
@@ -51,7 +67,7 @@ function App() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/payment/success" element={<Paymentsuccess />} />
         <Route path="/loader" element={<Loader />} />
-        <Route path="/paymentprimary" element={<Primarypaymentpage/>}/>
+        <Route path="/paymentprimary" element={<Primarypaymentpage />} />
       </Routes>
     </>
   );

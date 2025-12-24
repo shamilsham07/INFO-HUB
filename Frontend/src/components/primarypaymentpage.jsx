@@ -2,21 +2,52 @@ import React from "react";
 import Sidbar from "./sidbar";
 import Payment from "./payment";
 import { useState } from "react";
-
+import { useSelector } from "react-redux";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast, Bounce } from "react-toastify";
 export default function Primarypaymentpage() {
+  const authenticate = useSelector((state) => state.auth.isAuthenticated);
+  console.log("....", authenticate);
   const [modal, setmodal] = useState(false);
   const [price, setprice] = useState("");
 
   function paymentfield(e) {
-    console.log(e);
-    setprice(e);
-    setmodal(true);
+    if (authenticate) {
+      console.log(e);
+      setprice(e);
+      setmodal(true);
+    } else {
+      toast.error("please login to continue payment!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+      });
+      console.log("something went worng");
+    }
   }
 
   return (
     <>
       <section>
-        <Sidbar />
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
+        <Sidbar active={"paymentprimary"} />
         <div className="container">
           <section className="payment-section flex-column">
             <div className="pt-5 payment-hading text-center">
@@ -287,11 +318,9 @@ export default function Primarypaymentpage() {
           </section>
         </div>
         {modal && (
-          <section className="main-modal d-flex justify-content-center align-items-center">
-            <div className="modals">
-              <Payment price={price}  />
-            </div>
-          </section>
+          <div className="position-absolute p-3 edit-payment">
+            <Payment price={price} />
+          </div>
         )}
       </section>
     </>
